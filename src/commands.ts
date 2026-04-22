@@ -1,4 +1,3 @@
-import { getFonts } from 'font-list';
 import * as vscode from 'vscode';
 import { CsvEditorProvider } from './CsvEditorProvider';
 
@@ -85,11 +84,20 @@ export function registerCsvCommands(context: vscode.ExtensionContext) {
       const currentEffective = currentCsvFont || inheritedFont;
 
       let fonts: string[] = [];
-      try {
-        fonts = (await getFonts()).map((f: string) => f.replace(/^"(.*)"$/, '$1')).sort();
-      } catch (e) {
-        console.error('CSV: unable to enumerate system fonts', e);
-      }
+      // Use VS Code's built-in font list (no external dependency)
+      fonts = [
+        'Consolas',
+        'Courier New',
+        'Menlo',
+        'Monaco',
+        'Lucida Console',
+        'Liberation Mono',
+        'DejaVu Sans Mono',
+        'Source Code Pro',
+        'Fira Code',
+        'JetBrains Mono',
+        'Roboto Mono'
+      ].sort();
       const picks = ['(inherit editor setting)', ...fonts];
 
       const choice = await vscode.window.showQuickPick(picks, {
@@ -180,6 +188,18 @@ export function registerCsvCommands(context: vscode.ExtensionContext) {
         console.error('CSV: encoding change flow failed', e);
         vscode.window.showWarningMessage('CSV: Could not invoke the built-in encoding picker. Please use File → Reopen with Encoding, then re-open the CSV view.');
       }
+    }),
+    vscode.commands.registerCommand('csv.toggleRowHeightMode', async () => {
+      const config = vscode.workspace.getConfiguration('csv');
+      const current = config.get<string>('rowHeightMode', 'firstline');
+      const modes: Array<'compact' | 'firstline' | 'wrap'> = ['compact', 'firstline', 'wrap'];
+      const currentIndex = modes.indexOf(current as any);
+      const nextIndex = (currentIndex + 1) % modes.length;
+      const nextMode = modes[nextIndex];
+      await config.update('rowHeightMode', nextMode, vscode.ConfigurationTarget.Global);
+      const label = nextMode === 'compact' ? '紧凑' : nextMode === 'firstline' ? '单行折行' : '自然折行';
+      vscode.window.showInformationMessage(`CSV: 行高模式已切换为 ${label}`);
+      CsvEditorProvider.editors.forEach(ed => ed.refresh());
     })
   );
 }

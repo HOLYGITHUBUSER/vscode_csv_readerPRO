@@ -1,9 +1,9 @@
 {
-  "name": "csv",
-  "displayName": "CSV",
-  "publisher": "ReprEng",
-  "description": "Seamlessly Display and Edit CSVs",
-  "icon": "images/icon.jpg",
+  "name": "csv-custom-pro",
+  "displayName": "CSV_CUSTOM_PRO",
+  "publisher": "CSV_CUSTOM_PRO",
+  "description": "无缝显示和编辑CSV文件，支持过滤/排序/搜索",
+  "icon": "images/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/jonaraphael/csv.git"
@@ -22,14 +22,14 @@
     "onLanguage:csv",
     "onLanguage:tsv",
     "onCommand:csv.toggleExtension",
-    "onCommand:csv.toggleHeader",
     "onCommand:csv.toggleSerialIndex",
     "onCommand:csv.changeSeparator",
     "onCommand:csv.resetSeparator",
     "onCommand:csv.changeFontFamily",
     "onCommand:csv.changeIgnoreRows",
     "onCommand:csv.changeEncoding",
-    "onCommand:csv.toggleClickableLinks"
+    "onCommand:csv.toggleClickableLinks",
+    "onCommand:csv.toggleRowHeightMode"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -66,79 +66,79 @@
     "commands": [
       {
         "command": "csv.toggleExtension",
-        "title": "CSV: Toggle Extension On/Off"
-      },
-      {
-        "command": "csv.toggleHeader",
-        "title": "CSV: Toggle First Row as Header"
+        "title": "CSV_CUSTOM_PRO: 开关扩展"
       },
       {
         "command": "csv.toggleSerialIndex",
-        "title": "CSV: Toggle Serial Index Column"
+        "title": "CSV_CUSTOM_PRO: 切换序号列"
       },
       {
         "command": "csv.changeSeparator",
-        "title": "CSV: Change CSV Separator"
+        "title": "CSV_CUSTOM_PRO: 更改分隔符"
       },
       {
         "command": "csv.resetSeparator",
-        "title": "CSV: Reset CSV Separator (Inherit)"
+        "title": "CSV_CUSTOM_PRO: 重置分隔符（继承）"
       },
       {
         "command": "csv.changeFontFamily",
-        "title": "CSV: Change Font Family"
+        "title": "CSV_CUSTOM_PRO: 更改字体"
       },
       {
         "command": "csv.changeIgnoreRows",
-        "title": "CSV: Hide First N Rows"
+        "title": "CSV_CUSTOM_PRO: 隐藏前N行"
       },
       {
         "command": "csv.changeEncoding",
-        "title": "CSV: Change File Encoding"
+        "title": "CSV_CUSTOM_PRO: 更改文件编码"
       },
       {
         "command": "csv.toggleClickableLinks",
-        "title": "CSV: Toggle Clickable Links"
+        "title": "CSV_CUSTOM_PRO: 切换可点击链接"
+      },
+      {
+        "command": "csv.toggleRowHeightMode",
+        "title": "CSV_CUSTOM_PRO: 切换行高模式（紧凑/自然折行）"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "CSV Extension Configuration",
+      "title": "CSV_CUSTOM_PRO 配置",
       "properties": {
         "csv.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/Disable the CSV custom editor."
+          "description": "启用/禁用CSV自定义编辑器。"
         },
         "csv.fontFamily": {
           "type": "string",
           "default": "",
-          "description": "Font family used by the CSV custom editor. Leave empty to inherit ‘editor.fontFamily’.",
+          "description": "CSV编辑器使用的字体。留空则继承'editor.fontFamily'。",
           "scope": "application"
         },
         "csv.fontSize": {
           "type": "number",
           "default": 0,
           "minimum": 0,
-          "description": "Font size in pixels for the CSV custom editor. Set to 0 to inherit 'editor.fontSize'.",
+          "description": "CSV编辑器字体大小（像素）。设为0则继承'editor.fontSize'。",
           "scope": "application"
         },
         "csv.mouseWheelZoom": {
           "type": "boolean",
           "default": true,
-          "description": "Enable Ctrl/Cmd + mouse wheel zoom in the CSV editor.",
+          "description": "启用Ctrl/Cmd+鼠标滚轮缩放。",
           "scope": "application"
         },
         "csv.mouseWheelZoomInvert": {
           "type": "boolean",
           "default": false,
-          "description": "Invert the Ctrl/Cmd + mouse wheel zoom direction in the CSV editor.",
+          "description": "反转Ctrl/Cmd+鼠标滚轮缩放方向。",
           "scope": "application"
         },
         "csv.cellPadding": {
           "type": "number",
           "default": 4,
-          "description": "Vertical padding in pixels for table cells."
+          "description": "表格单元格垂直内边距（像素）。"
         },
         "csv.columnColorMode": {
           "type": "string",
@@ -147,7 +147,7 @@
             "theme"
           ],
           "default": "type",
-          "description": "Column text color mode. 'type' uses CSV's type-based colors. 'theme' uses the current theme foreground color for all columns."
+          "description": "列文字颜色模式。'type'按数据类型着色，'theme'使用主题前景色。"
         },
         "csv.columnColorPalette": {
           "type": "string",
@@ -157,22 +157,22 @@
             "warm"
           ],
           "default": "default",
-          "description": "Type-color palette when csv.columnColorMode is 'type'. 'default' keeps the original palette, 'cool' biases colors toward greens/blues, and 'warm' biases colors toward oranges/reds."
+          "description": "类型着色调色板。'default'默认，'cool'偏蓝绿，'warm'偏橙红。"
         },
         "csv.diffUseThemeForeground": {
           "type": "boolean",
           "default": true,
-          "description": "When CSV is opened in a diff/compare view, use the current theme foreground color for cell text so diff highlighting stays visible."
+          "description": "差异对比视图中使用主题前景色，使差异高亮可见。"
         },
         "csv.clickableLinks": {
           "type": "boolean",
           "default": true,
-          "description": "Make URLs in cells clickable. Ctrl/Cmd+click to open links."
+          "description": "单元格中的URL可点击。Ctrl/Cmd+点击打开链接。"
         },
         "csv.showTrailingEmptyRow": {
           "type": "boolean",
           "default": true,
-          "description": "Show an extra empty row at the end of the table for quick append-style editing."
+          "description": "表格末尾显示空行，便于追加编辑。"
         },
         "csv.separatorMode": {
           "type": "string",
@@ -182,12 +182,12 @@
             "default"
           ],
           "default": "extension",
-          "description": "How CSV chooses the separator when no per-file override exists. 'extension' uses extension mapping, 'auto' attempts detection from file content first, and 'default' always uses csv.defaultSeparator."
+          "description": "分隔符选择方式。'extension'按扩展名映射，'auto'自动检测，'default'使用默认分隔符。"
         },
         "csv.defaultSeparator": {
           "type": "string",
           "default": ",",
-          "description": "Fallback separator used by separator modes. Use '\\t' for tab in settings JSON."
+          "description": "默认分隔符。在JSON设置中用'\\t'表示制表符。"
         },
         "csv.separatorByExtension": {
           "type": "object",
@@ -200,20 +200,30 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Separator mapping by file extension. Keys may be '.ext' or 'ext'. Values are separator strings."
+          "description": "按文件扩展名映射分隔符。键为'.ext'或'ext'，值为分隔符。"
         },
         "csv.maxFileSizeMB": {
           "type": "number",
           "default": 10,
           "minimum": 0,
-          "description": "Soft max size in MB for opening files in CSV view. 0 disables the limit. When exceeded, CSV prompts to cancel, continue this time, or disable the limit."
+          "description": "打开文件大小上限（MB）。0禁用限制。超限时提示取消、继续或禁用。"
+        },
+        "csv.rowHeightMode": {
+          "type": "string",
+          "enum": [
+            "compact",
+            "firstline",
+            "wrap"
+          ],
+          "default": "firstline",
+          "description": "行高模式：'compact' 紧凑（\\n当空格、横向截断）；'firstline' 单行折行（默认，保留原文、只露第一行）；'wrap' 自然折行（全展开）。可随时拖动行边界手动调整。"
         }
       }
     },
     "customEditors": [
       {
         "viewType": "csv.editor",
-        "displayName": "CSV",
+        "displayName": "CSV_CUSTOM_PRO",
         "selector": [
           {
             "filenamePattern": "*.csv"
@@ -239,8 +249,8 @@
     "test": "npm run compile && node --test out/test"
   },
   "dependencies": {
-    "font-list": "^1.5.1",
-    "papaparse": "^5.5.3"
+    "papaparse": "^5.5.3",
+    "undici": "^6.21.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
@@ -248,8 +258,9 @@
     "@types/vscode": "^1.70.0",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
     "@typescript-eslint/parser": "^7.9.0",
-    "@vscode/vsce": "^3.7.1",
+    "@vscode/vsce": "^2.15.0",
     "eslint": "^8.57.0",
+    "jsdom": "^29.0.2",
     "typescript": "^4.4.3",
     "vscode": "^1.1.37"
   }
