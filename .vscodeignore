@@ -19,3 +19,4 @@ out/test/**
 images-图片/Screenshot_*.png
 images-图片/*.orig.png
 test-示例/**
+e2e-端到端/**

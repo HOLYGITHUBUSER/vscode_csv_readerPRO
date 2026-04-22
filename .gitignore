@@ -3,3 +3,5 @@ node_modules
 .vscode-test/
 backup/
 .DS_Store
+e2e-端到端/test-results/
+playwright-report/

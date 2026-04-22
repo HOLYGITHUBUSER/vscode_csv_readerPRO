@@ -249,13 +249,15 @@
     "lint": "eslint 'src-源码/**/*.ts'",
     "package": "node scripts/package-vsix-with-timestamp-打包带时间戳.cjs",
     "test": "npm run compile && node --test out/test/**/*.test.js",
-    "test:webview": "npm run compile && node --test out/test/webview-*.test.js"
+    "test:webview": "npm run compile && node --test out/test/webview-*.test.js",
+    "test:e2e": "playwright test --config e2e-端到端/playwright.config.ts"
   },
   "dependencies": {
     "papaparse": "^5.5.3",
     "undici": "^6.21.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/node": "^20.11.19",
     "@types/papaparse": "^5.3.16",
     "@types/vscode": "^1.70.0",
