@@ -7,6 +7,7 @@
 ## 功能特性
 
 ### 核心功能
+
 - **表格化编辑**: 直接在 VS Code 中以表格形式编辑 CSV 文件，支持单元格点击编辑
 - **智能列宽**: 自动计算列宽，确保数据清晰可读
 - **数据类型着色**: 根据数据类型（布尔值、日期、整数、浮点数、文本）自动为列着色
@@ -15,6 +16,7 @@
 - **可点击链接**: 自动识别 URL，Ctrl/Cmd+点击打开
 
 ### 高级功能
+
 - **过滤排序**: 支持全局搜索和列过滤，可按列排序
 - **行高模式**: 三种行高模式（紧凑/单行折行/自然折行），支持手动调整
 - **键盘导航**: 使用箭头键、Tab 键在单元格间移动
@@ -28,12 +30,14 @@
 ## 安装使用
 
 ### 安装
+
 1. 打开 VS Code
 2. 按 `Ctrl+Shift+X` (macOS: `Cmd+Shift+X`) 打开扩展市场
 3. 搜索 "CSV Custom Pro"
 4. 点击安装
 
 ### 使用
+
 打开任意 `.csv`、`.tsv`、`.tab` 或 `.psv` 文件，扩展会自动以表格形式加载。
 
 ---
@@ -58,24 +62,27 @@
 
 ### 全局设置
 
-| 设置项 | 类型 | 默认值 | 说明 |
-|--------|------|--------|------|
-| `csv.enabled` | boolean | true | 启用/禁用自定义编辑器 |
-| `csv.fontFamily` | string | 空 | 字体族，空则继承编辑器设置 |
-| `csv.fontSize` | number | 0 | 字体大小（px），0 则继承编辑器设置 |
-| `csv.mouseWheelZoom` | boolean | true | 启用鼠标滚轮缩放 |
-| `csv.mouseWheelZoomInvert` | boolean | false | 反转缩放方向 |
-| `csv.cellPadding` | number | 4 | 单元格内边距（px） |
-| `csv.columnColorMode` | string | type | 列颜色模式：type（类型着色）或 theme（主题前景色） |
-| `csv.columnColorPalette` | string | default | 类型颜色调色板：default、cool、warm |
-| `csv.clickableLinks` | boolean | true | 使 URL 可点击 |
-| `csv.showTrailingEmptyRow` | boolean | true | 显示末尾空行 |
-| `csv.separatorMode` | string | extension | 分隔符选择模式 |
-| `csv.defaultSeparator` | string | `,` | 默认分隔符 |
-| `csv.rowHeightMode` | string | firstline | 行高模式：compact、firstline、wrap |
-| `csv.maxFileSizeMB` | number | 10 | 文件大小限制（MB），0 表示不限制 |
+
+| 设置项                        | 类型      | 默认值       | 说明                             |
+| -------------------------- | ------- | --------- | ------------------------------ |
+| `csv.enabled`              | boolean | true      | 启用/禁用自定义编辑器                    |
+| `csv.fontFamily`           | string  | 空         | 字体族，空则继承编辑器设置                  |
+| `csv.fontSize`             | number  | 0         | 字体大小（px），0 则继承编辑器设置            |
+| `csv.mouseWheelZoom`       | boolean | true      | 启用鼠标滚轮缩放                       |
+| `csv.mouseWheelZoomInvert` | boolean | false     | 反转缩放方向                         |
+| `csv.cellPadding`          | number  | 4         | 单元格内边距（px）                     |
+| `csv.columnColorMode`      | string  | type      | 列颜色模式：type（类型着色）或 theme（主题前景色） |
+| `csv.columnColorPalette`   | string  | default   | 类型颜色调色板：default、cool、warm      |
+| `csv.clickableLinks`       | boolean | true      | 使 URL 可点击                      |
+| `csv.showTrailingEmptyRow` | boolean | true      | 显示末尾空行                         |
+| `csv.separatorMode`        | string  | extension | 分隔符选择模式                        |
+| `csv.defaultSeparator`     | string  | `,`       | 默认分隔符                          |
+| `csv.rowHeightMode`        | string  | firstline | 行高模式：compact、firstline、wrap    |
+| `csv.maxFileSizeMB`        | number  | 10        | 文件大小限制（MB），0 表示不限制             |
+
 
 ### 每文件设置
+
 - 序号列显示
 - 分隔符覆盖
 - 隐藏前 N 行
@@ -84,16 +91,18 @@
 
 ## 快捷键
 
-| 操作 | 快捷键 |
-|------|--------|
-| 移动选择 | 箭头键 |
-| 横向移动 | Tab / Shift+Tab |
-| 复制 | Ctrl/Cmd + C |
-| 粘贴 | Ctrl/Cmd + V |
-| 查找 | Ctrl/Cmd + F |
-| 替换 | Ctrl/Cmd + H |
-| 全选 | Ctrl/Cmd + A |
-| 缩放 | Ctrl/Cmd + +/-/0 或鼠标滚轮 |
+
+| 操作   | 快捷键                    |
+| ---- | ---------------------- |
+| 移动选择 | 箭头键                    |
+| 横向移动 | Tab / Shift+Tab        |
+| 复制   | Ctrl/Cmd + C           |
+| 粘贴   | Ctrl/Cmd + V           |
+| 查找   | Ctrl/Cmd + F           |
+| 替换   | Ctrl/Cmd + H           |
+| 全选   | Ctrl/Cmd + A           |
+| 缩放   | Ctrl/Cmd + +/-/0 或鼠标滚轮 |
+
 
 ---
 

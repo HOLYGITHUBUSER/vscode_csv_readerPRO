@@ -1,4 +1,5 @@
 out
-dist-产物
 node_modules
 .vscode-test/
+backup/
+.DS_Store
