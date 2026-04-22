@@ -246,7 +246,7 @@
     "vscode:prepublish": "npm run compile",
     "lint": "eslint 'src-源码/**/*.ts'",
     "package": "vsce package -o dist-产物/",
-    "test": "npm run compile && node --test out/test"
+    "test": "npm run compile && node --test out/test/**/*.test.js"
   },
   "dependencies": {
     "papaparse": "^5.5.3",

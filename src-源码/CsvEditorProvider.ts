@@ -778,7 +778,7 @@ class CsvEditorController {
           const rawValue = row[cIdx] || '';
           const safe = this.formatCellContent(rawValue, state.clickableLinks);
           const titleAttr = this.getMultilineCellTitleAttr(rawValue);
-          cells += `<td tabindex="0" style="min-width:${Math.min(state.columnWidths[cIdx] || 0, 100)}ch;max-width:100ch;border:1px solid ${state.isDark ? '#555' : '#ccc'};color:${state.columnColors[cIdx]};overflow:hidden;"${titleAttr} data-row="${absRow}" data-col="${cIdx}"><div class="cell-body">${safe}</div></td>`;
+          cells += `<td tabindex="0" style="min-width:${Math.min(state.columnWidths[cIdx] || 0, 100)}ch;max-width:100ch;border:1px solid ${state.isDark ? '#555' : '#ccc'};color:${state.columnColors[cIdx]};overflow:hidden;"${titleAttr} data-row="${absRow}" data-col="${cIdx}"><div class="cell-body" style="white-space: pre-wrap; overflow-wrap: anywhere;">${safe}</div></td>`;
         }
         const idxCell = state.addSerialIndex
           ? `<td tabindex="0" style="min-width:${state.serialIndexWidthCh}ch;max-width:${state.serialIndexWidthCh}ch;border:1px solid ${state.isDark ? '#555' : '#ccc'};color:#888;" data-row="${absRow}" data-col="-1">${displayIdx}</td>`
@@ -1539,7 +1539,7 @@ class CsvEditorController {
             const rawValue = row[cIdx] || '';
             const safe = this.formatCellContent(rawValue, clickableLinks);
             const titleAttr = this.getMultilineCellTitleAttr(rawValue);
-            cells += `<td tabindex="0" style="min-width:${Math.min(columnWidths[cIdx]||0,100)}ch;max-width:100ch;border:1px solid ${isDark?'#555':'#ccc'};color:${columnColors[cIdx]};overflow:hidden;"${titleAttr} data-row="${absRow}" data-col="${cIdx}"><div class="cell-body">${safe}</div></td>`;
+            cells += `<td tabindex="0" style="min-width:${Math.min(columnWidths[cIdx]||0,100)}ch;max-width:100ch;border:1px solid ${isDark?'#555':'#ccc'};color:${columnColors[cIdx]};overflow:hidden;"${titleAttr} data-row="${absRow}" data-col="${cIdx}"><div class="cell-body" style="white-space: pre-wrap; overflow-wrap: anywhere;">${safe}</div></td>`;
           }
 
           return `<tr>${
@@ -1579,7 +1579,7 @@ class CsvEditorController {
           const rawValue = row[i] || '';
           const safe = this.formatCellContent(rawValue, clickableLinks);
           const titleAttr = this.getMultilineCellTitleAttr(rawValue);
-          tableHtml += `<td tabindex="0" style="min-width: ${Math.min(columnWidths[i] || 0, 100)}ch; max-width: 100ch; border: 1px solid ${isDark ? '#555' : '#ccc'}; color: ${columnColors[i]}; overflow: hidden;"${titleAttr} data-row="${offset + 1 + r}" data-col="${i}"><div class="cell-body">${safe}</div></td>`;
+          tableHtml += `<td tabindex="0" style="min-width: ${Math.min(columnWidths[i] || 0, 100)}ch; max-width: 100ch; border: 1px solid ${isDark ? '#555' : '#ccc'}; color: ${columnColors[i]}; overflow: hidden;"${titleAttr} data-row="${offset + 1 + r}" data-col="${i}"><div class="cell-body" style="white-space: pre-wrap; overflow-wrap: anywhere;">${safe}</div></td>`;
         }
         tableHtml += `</tr>`;
       });
@@ -1603,7 +1603,7 @@ class CsvEditorController {
           const rawValue = row[i] || '';
           const safe = this.formatCellContent(rawValue, clickableLinks);
           const titleAttr = this.getMultilineCellTitleAttr(rawValue);
-          tableHtml += `<td tabindex="0" style="min-width: ${Math.min(columnWidths[i] || 0, 100)}ch; max-width: 100ch; border: 1px solid ${isDark ? '#555' : '#ccc'}; color: ${columnColors[i]}; overflow: hidden;"${titleAttr} data-row="${offset + r}" data-col="${i}"><div class="cell-body">${safe}</div></td>`;
+          tableHtml += `<td tabindex="0" style="min-width: ${Math.min(columnWidths[i] || 0, 100)}ch; max-width: 100ch; border: 1px solid ${isDark ? '#555' : '#ccc'}; color: ${columnColors[i]}; overflow: hidden;"${titleAttr} data-row="${offset + r}" data-col="${i}"><div class="cell-body" style="white-space: pre-wrap; overflow-wrap: anywhere;">${safe}</div></td>`;
         }
         tableHtml += `</tr>`;
       });
@@ -1660,9 +1660,10 @@ class CsvEditorController {
     };
   }
 
-  // Header mode is now always on; the first visible row is the column header.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private getEffectiveHeader(_data: string[][], _hiddenRows: number): boolean {
+    const map = this.context.workspaceState.get<Record<string, boolean>>(CsvEditorProvider.headerKey, {});
+    const key = this.document.uri.toString();
+    if (key in map) return map[key];
     return true;
   }
 
@@ -2714,20 +2715,22 @@ export class CsvEditorProvider implements vscode.CustomTextEditorProvider {
     await context.workspaceState.update(CsvEditorProvider.hiddenRowsKey, map);
   }
 
-  // Header mode is permanently enabled; these accessors exist only for API compatibility.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static getHeaderForUri(_context: vscode.ExtensionContext, _uri: vscode.Uri): boolean {
+  public static getHeaderForUri(context: vscode.ExtensionContext, uri: vscode.Uri): boolean {
+    const map = context.workspaceState.get<Record<string, boolean>>(CsvEditorProvider.headerKey, {});
+    const key = uri.toString();
+    if (key in map) return map[key];
     return true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static hasHeaderOverride(_context: vscode.ExtensionContext, _uri: vscode.Uri): boolean {
-    return true;
+  public static hasHeaderOverride(context: vscode.ExtensionContext, uri: vscode.Uri): boolean {
+    const map = context.workspaceState.get<Record<string, boolean>>(CsvEditorProvider.headerKey, {});
+    return uri.toString() in map;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async setHeaderForUri(_context: vscode.ExtensionContext, _uri: vscode.Uri, _val: boolean): Promise<void> {
-    // no-op: header is always on
+  public static async setHeaderForUri(context: vscode.ExtensionContext, uri: vscode.Uri, val: boolean): Promise<void> {
+    const map = context.workspaceState.get<Record<string, boolean>>(CsvEditorProvider.headerKey, {});
+    map[uri.toString()] = val;
+    await context.workspaceState.update(CsvEditorProvider.headerKey, map);
   }
 
   public static getSerialIndexForUri(context: vscode.ExtensionContext, uri: vscode.Uri): boolean {
