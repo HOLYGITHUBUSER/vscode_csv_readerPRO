@@ -1,8 +1,7 @@
-<p align="center">
-  <img src="images-图片/icon.png" alt="CSV Custom Pro 图标" width="160" />
-</p>
-
 # CSV Custom Pro
+
+![CSV Custom Pro 图标](images-图片/icon.png)
+
 
 一款专为 VS Code 打造的高级 CSV 编辑器扩展，提供类似电子表格的交互体验，让您能够高效地查看、编辑和管理 CSV 数据。
 
@@ -11,6 +10,13 @@
 - 最新安装包（稳定文件名）：[`dist-产物/csv-custom-pro-latest.vsix`](dist-产物/csv-custom-pro-latest.vsix)
 - 构建信息（时间 / 版本 / commit / sha256）：[`dist-产物/BUILD-INFO.md`](dist-产物/BUILD-INFO.md)
 - 历史时间戳版本仍保留在 [`dist-产物/`](dist-产物/)。
+
+## 试用示例
+
+装好扩展后，可直接在 VS Code / Cursor 里打开以下样例体验表格化编辑、排序、过滤、查找替换等功能：
+
+- [`test-示例/complex_test.csv`](test-示例/complex_test.csv)：多语言/嵌套引号/换行单元格等边界情形
+- [`test-示例/super_example.csv`](test-示例/super_example.csv)：千行数据，体验分块渲染与表头识别
 
 ---
 

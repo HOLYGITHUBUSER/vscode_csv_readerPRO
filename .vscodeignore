@@ -18,3 +18,4 @@ vsc-extension-quickstart.md
 out/test/**
 images-图片/Screenshot_*.png
 images-图片/*.orig.png
+test-示例/**
