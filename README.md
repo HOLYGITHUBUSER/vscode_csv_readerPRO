@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images-图片/icon.png" alt="CSV Custom Pro 图标" width="160" />
+</p>
+
 # CSV Custom Pro
 
 一款专为 VS Code 打造的高级 CSV 编辑器扩展，提供类似电子表格的交互体验，让您能够高效地查看、编辑和管理 CSV 数据。
