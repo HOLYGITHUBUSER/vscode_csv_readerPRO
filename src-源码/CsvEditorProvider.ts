@@ -72,6 +72,12 @@ class CsvEditorController {
   private filterSortState: { globalSearch: string; columnFilters: Record<string, string>; sortCol: number; sortDir: 'asc' | 'desc' | null } = {
     globalSearch: '', columnFilters: {}, sortCol: -1, sortDir: null
   };
+  /**
+   * Full text of the document taken right before the first sortColumn that
+   * followed the most recent non-sort edit. Consumed (and cleared) by
+   * resetSort to restore the pre-sort order in a single WorkspaceEdit.
+   */
+  private sortSnapshotText: string | null = null;
 
   constructor(private readonly context: vscode.ExtensionContext) {}
 
@@ -125,6 +131,18 @@ class CsvEditorController {
     });
 
     webviewPanel.webview.onDidReceiveMessage(async e => {
+      // Any mutation other than sort/resetSort invalidates the "original order"
+      // snapshot: otherwise cycling back to original would also undo the edit.
+      const mutations = new Set([
+        'editCell', 'replaceCells', 'pasteCells',
+        'insertColumn', 'insertColumns', 'deleteColumn', 'deleteColumns',
+        'insertRow', 'insertRows', 'deleteRow', 'deleteRows',
+        'reorderColumns', 'reorderRows',
+      ]);
+      if (mutations.has(e.type)) {
+        this.sortSnapshotText = null;
+      }
+
       switch (e.type) {
         case 'editCell':
           this.updateDocument(e.row, e.col, e.value);
@@ -180,6 +198,9 @@ class CsvEditorController {
           break;
         case 'sortColumn':
           await this.sortColumn(e.index, e.ascending);
+          break;
+        case 'resetSort':
+          await this.resetSort();
           break;
         case 'openLink':
           await this.openLinkExternally(e.url);
@@ -1085,6 +1106,11 @@ class CsvEditorController {
     const hidden       = this.getHiddenRows();
 
     const text   = this.document.getText();
+    // First sort since the last non-sort mutation? Snapshot so user can later
+    // cycle back to "original" order via resetSort.
+    if (this.sortSnapshotText === null) {
+      this.sortSnapshotText = text;
+    }
     const result = Papa.parse(text, { dynamicTyping: false, delimiter: separator });
     // Exclude virtual/trailing empty rows from sort input
     const rows   = this.trimTrailingEmptyRows(result.data as string[][]);
@@ -1158,6 +1184,36 @@ class CsvEditorController {
     this.isUpdatingDocument = false;
     this.updateWebviewContent();
     console.log(`CSV: Sorted column ${index + 1} (${ascending ? 'A-Z' : 'Z-A'})`);
+  }
+
+  /**
+   * Restore the document text captured by the most recent snapshot taken by
+   * sortColumn, undoing any sort applied since that snapshot. No-op if we
+   * don't have a snapshot (e.g. user never sorted).
+   */
+  private async resetSort(): Promise<void> {
+    const snapshot = this.sortSnapshotText;
+    if (snapshot === null) {
+      return;
+    }
+    this.isUpdatingDocument = true;
+    try {
+      if (this.document.getText() !== snapshot) {
+        const fullRange = new vscode.Range(
+          0, 0,
+          this.document.lineCount,
+          this.document.lineCount ? this.document.lineAt(this.document.lineCount - 1).text.length : 0
+        );
+        const edit = new vscode.WorkspaceEdit();
+        edit.replace(this.document.uri, fullRange, snapshot);
+        await vscode.workspace.applyEdit(edit);
+      }
+      this.sortSnapshotText = null;
+    } finally {
+      this.isUpdatingDocument = false;
+      this.updateWebviewContent();
+      console.log('CSV: Reset sort to original order');
+    }
   }
 
   private async insertRow(index: number) {
@@ -1565,7 +1621,7 @@ class CsvEditorController {
       }`;
       for (let i = 0; i < numColumns; i++) {
         const safe = this.formatCellContent(headerRow[i] || '', clickableLinks);
-        tableHtml += `<th tabindex="0" style="min-width: max(${Math.min(columnWidths[i] || 0, 100)}ch, 60px); max-width: 100ch; border: 1px solid ${isDark ? '#555' : '#ccc'}; background-color: ${isDark ? '#1e1e1e' : '#ffffff'}; color: ${columnColors[i]}; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" data-row="${offset}" data-col="${i}"><span class="th-content"><span class="th-label">${safe}</span><span class="sort-btn" data-sort-btn="1" role="button" aria-label="Sort column" title="点击切换排序"></span></span></th>`;
+        tableHtml += `<th tabindex="0" style="min-width: max(${Math.min(columnWidths[i] || 0, 100)}ch, 60px); max-width: 100ch; border: 1px solid ${isDark ? '#555' : '#ccc'}; background-color: ${isDark ? '#1e1e1e' : '#ffffff'}; color: ${columnColors[i]}; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" data-row="${offset}" data-col="${i}"><span class="th-content"><span class="th-label">${safe}</span><span class="sort-btn" data-sort-btn="1" role="button" aria-label="Sort column" title="点击切换：A-Z → Z-A → 原始"></span></span></th>`;
       }
       tableHtml += `</tr></thead><tbody>`;
       const initialBodyRows = chunked ? allRows.slice(0, chunkRows) : allRows;
@@ -2757,6 +2813,31 @@ export class CsvEditorProvider implements vscode.CustomTextEditorProvider {
 
   // Test helpers to access internal utilities without VS Code runtime
   public static __test = {
+    /**
+     * Pure state-machine mirror of the sort-snapshot logic embedded in
+     * CsvEditorController.sortColumn / resetSort. Used by unit tests to make
+     * sure: (1) the first sort after a non-sort edit captures the snapshot,
+     * (2) subsequent sorts reuse the same snapshot, (3) any mutation clears
+     * it, and (4) resetSort restores and clears the snapshot.
+     */
+    sortSnapshotMachine() {
+      let snapshot: string | null = null;
+      return {
+        get snapshot() { return snapshot; },
+        onSort(currentText: string) {
+          if (snapshot === null) { snapshot = currentText; }
+        },
+        onMutation() {
+          snapshot = null;
+        },
+        onReset(): { restored: string | null } {
+          if (snapshot === null) { return { restored: null }; }
+          const restored = snapshot;
+          snapshot = null;
+          return { restored };
+        },
+      };
+    },
     // Pure helper mirroring sort behavior; returns combined rows after sort.
     sortByColumn(rows: string[][], index: number, ascending: boolean, treatHeader: boolean, hiddenRows: number): string[][] {
       // Trim trailing empty rows like runtime before sorting

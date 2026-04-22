@@ -430,6 +430,11 @@ const showContextMenu = (x, y, row, col) => {
       persistSortState(); updateSortHeaderIndicator();
       vscode.postMessage({ type: 'sortColumn', index: col, ascending: false });
     });
+    item('Sort: 恢复原始', () => {
+      currentSortCol = null; currentSortAsc = true;
+      persistSortState(); updateSortHeaderIndicator();
+      vscode.postMessage({ type: 'resetSort' });
+    });
   }        
 
   /* Row section */
@@ -821,16 +826,34 @@ const updateSortHeaderIndicator = () => {
   const th = table.querySelector(`th[data-col="${currentSortCol}"]`);
   if (th) th.classList.add(currentSortAsc ? 'sort-asc' : 'sort-desc');
 };
+/* Tri-state sort cycle per column:
+ *   none → asc → desc → none (restore original) → asc → …
+ * Switching to a different column always starts fresh at asc.
+ * "none" is delivered to the extension host as { type: 'resetSort' }, which
+ * restores the pre-sort document snapshot captured server-side.
+ */
 const toggleSortOnColumn = col => {
-  if (currentSortCol === col) {
-    currentSortAsc = !currentSortAsc;
-  } else {
+  if (currentSortCol !== col) {
     currentSortCol = col;
     currentSortAsc = true;
+    persistSortState();
+    updateSortHeaderIndicator();
+    vscode.postMessage({ type: 'sortColumn', index: col, ascending: true });
+    return;
   }
+  if (currentSortAsc) {
+    currentSortAsc = false;
+    persistSortState();
+    updateSortHeaderIndicator();
+    vscode.postMessage({ type: 'sortColumn', index: col, ascending: false });
+    return;
+  }
+  // Was desc → back to original.
+  currentSortCol = null;
+  currentSortAsc = true;
   persistSortState();
   updateSortHeaderIndicator();
-  vscode.postMessage({ type: 'sortColumn', index: col, ascending: currentSortAsc });
+  vscode.postMessage({ type: 'resetSort' });
 };
 
 table.addEventListener('mousedown', e => {
