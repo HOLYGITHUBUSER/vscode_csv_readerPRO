@@ -2226,6 +2226,38 @@ window.addEventListener('message', event => {
     persistState();
     try { startCell.focus({ preventScroll: true }); } catch { try { startCell.focus(); } catch {} }
     endCell.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'smooth' });
+  } else if (message.type === 'filterSortResult') {
+    // Re-render the tbody from the filtered/sorted rows the provider returned.
+    // This intentionally rebuilds the DOM (chunk state gets dropped) because
+    // the filter/sort result is already a complete row list.
+    const rows = Array.isArray(message.rows) ? message.rows : [];
+    const addSerialIndex = !!message.addSerialIndex;
+    const tbody = table ? table.querySelector('tbody') : null;
+    if (tbody) {
+      const html = rows.map(r => {
+        const cells = [];
+        if (addSerialIndex) {
+          cells.push('<td tabindex="0" data-row="' + r.absRow + '" data-col="-1">' + r.displayIdx + '</td>');
+        }
+        const rcells = Array.isArray(r.cells) ? r.cells : [];
+        for (let c = 0; c < rcells.length; c++) {
+          const cell = rcells[c] || { value: '', rendered: '' };
+          const rendered = typeof cell.rendered === 'string' && cell.rendered.length > 0 ? cell.rendered : (cell.value || '');
+          cells.push('<td tabindex="0" data-row="' + r.absRow + '" data-col="' + c + '"><div class="cell-body">' + rendered + '</div></td>');
+        }
+        return '<tr>' + cells.join('') + '</tr>';
+      }).join('');
+      tbody.innerHTML = html;
+    }
+    // Sync sort indicator with the authoritative state coming back from host.
+    if (typeof message.sortCol === 'number' && message.sortDir) {
+      currentSortCol = message.sortCol;
+      currentSortAsc = message.sortDir === 'asc';
+    } else {
+      currentSortCol = null;
+      currentSortAsc = true;
+    }
+    try { updateSortHeaderIndicator(); } catch {}
   } else if (message.type === 'findMatchesResult') {
     if (!findReplaceState.open) {
       return;
@@ -2302,3 +2334,88 @@ document.addEventListener('keydown', e => {
 });
 
 try { updateSortHeaderIndicator(); } catch {}
+
+/* ------------------------------------------------------------------------ *
+ * Floating panel: global filter input + row-height cycle + clear button.
+ *
+ * Matches the DOM that CsvEditorProvider.updateWebviewContent emits, and the
+ * message protocol the provider already handles:
+ *   - filterSort:       { type, globalSearch, columnFilters, sortCol, sortDir }
+ *   - setRowHeightMode: { type, mode: 'compact' | 'firstline' | 'wrap' }
+ * ------------------------------------------------------------------------ */
+(function initFloatPanel() {
+  const searchInput = document.getElementById('csvGlobalSearch');
+  const clearBtn    = document.getElementById('csvClearFilter');
+  const rhBtn       = document.getElementById('csvRowHeightToggle');
+
+  const ROW_HEIGHT_CYCLE = ['compact', 'firstline', 'wrap'];
+  const ROW_HEIGHT_LABEL = { compact: '紧凑', firstline: '单行折行', wrap: '自然折行' };
+
+  const applyRowHeightClass = mode => {
+    const tbl = document.querySelector('#csv-root table');
+    if (!tbl) return;
+    for (const m of ROW_HEIGHT_CYCLE) tbl.classList.remove(`row-${m}`);
+    tbl.classList.add(`row-${mode}`);
+  };
+
+  if (rhBtn) {
+    rhBtn.addEventListener('click', () => {
+      const cur  = rhBtn.getAttribute('data-mode') || 'firstline';
+      const idx  = ROW_HEIGHT_CYCLE.indexOf(cur);
+      const next = ROW_HEIGHT_CYCLE[(idx + 1) % ROW_HEIGHT_CYCLE.length];
+      rhBtn.setAttribute('data-mode', next);
+      rhBtn.textContent = ROW_HEIGHT_LABEL[next];
+      applyRowHeightClass(next);
+      vscode.postMessage({ type: 'setRowHeightMode', mode: next });
+    });
+  }
+
+  // Throttle search input to avoid re-filtering on every keystroke for large CSVs.
+  const FILTER_DEBOUNCE_MS = 200;
+  let filterTimer = null;
+  const sendFilter = (globalSearch, immediate) => {
+    const payload = {
+      type: 'filterSort',
+      globalSearch: globalSearch,
+      columnFilters: {},
+      sortCol: (typeof currentSortCol === 'number' ? currentSortCol : -1),
+      sortDir: (currentSortCol === null ? null : (currentSortAsc ? 'asc' : 'desc')),
+    };
+    if (immediate) {
+      vscode.postMessage(payload);
+    } else {
+      if (filterTimer) clearTimeout(filterTimer);
+      filterTimer = setTimeout(() => vscode.postMessage(payload), FILTER_DEBOUNCE_MS);
+    }
+  };
+
+  const syncClearVisibility = () => {
+    if (!clearBtn || !searchInput) return;
+    clearBtn.style.display = searchInput.value.length > 0 ? '' : 'none';
+  };
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      syncClearVisibility();
+      sendFilter(searchInput.value, /*immediate*/ false);
+    });
+    // Apply filter immediately on Enter so power-users don't have to wait 200ms.
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (filterTimer) { clearTimeout(filterTimer); filterTimer = null; }
+        sendFilter(searchInput.value, /*immediate*/ true);
+      }
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (!searchInput) return;
+      searchInput.value = '';
+      syncClearVisibility();
+      if (filterTimer) { clearTimeout(filterTimer); filterTimer = null; }
+      sendFilter('', /*immediate*/ true);
+      searchInput.focus();
+    });
+  }
+})();

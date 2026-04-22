@@ -110,11 +110,16 @@ function buildDom(cfg: HarnessConfig): string {
 <!-- Context menu + Floating filter panel + Find widget (main.js's top-level
      querySelectors touch these; shipping empty stubs so init doesn't crash) -->
 <div id="contextMenu" style="display:none"></div>
-<div id="csvFloatPanel">
-  <input id="csvGlobalSearch" type="text">
-  <span id="csvFilterStatus"></span>
-  <button id="csvClearFilter" type="button"></button>
-  <button id="csvRowHeightToggle" type="button" data-mode="${rowMode}"></button>
+<!-- Mirrors CsvEditorProvider.updateWebviewContent()'s float panel markup
+     closely enough that event-binding regressions surface in the harness. -->
+<div id="csvFloatPanel" style="position:fixed;right:16px;bottom:16px;z-index:1150;display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid #ccc;border-radius:6px;background:#fff;">
+  <span style="font-weight:600;">过滤:</span>
+  <input id="csvGlobalSearch" type="text" placeholder="搜索所有列..." style="height:24px;width:180px;">
+  <span id="csvFilterStatus" style="color:#999;font-size:0.85em;"></span>
+  <button id="csvClearFilter" type="button" style="display:none;">清除</button>
+  <span style="width:1px;height:18px;background:#ccc;margin:0 2px;"></span>
+  <span style="font-weight:600;">行高:</span>
+  <button id="csvRowHeightToggle" type="button" data-mode="${rowMode}">${rowMode === 'compact' ? '紧凑' : rowMode === 'firstline' ? '单行折行' : '自然折行'}</button>
 </div>
 <div id="findReplaceWidget" class="replace-collapsed" style="display:none">
   <div id="replaceToggleGutter">
