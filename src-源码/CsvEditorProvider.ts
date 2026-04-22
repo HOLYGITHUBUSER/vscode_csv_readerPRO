@@ -102,7 +102,7 @@ class CsvEditorController {
     webviewPanel.webview.options = {
       enableScripts: true,
       // Use file path for compatibility with older VS Code types (no Uri.joinPath)
-      localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media'))]
+      localResourceRoots: [vscode.Uri.file(path.join(this.context.extensionPath, 'media-媒体'))]
     };
 
     this.refreshDiffContext(webviewPanel);
@@ -1686,7 +1686,7 @@ class CsvEditorController {
     const isDark = vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark;
     // Build script URI using file path for compatibility (older APIs may lack Uri.joinPath)
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'main.js'))
+      vscode.Uri.file(path.join(this.context.extensionPath, 'media-媒体', 'main.js'))
     );
 
     // Safe separator transport (assumes single character; see assumptions)

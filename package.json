@@ -1,9 +1,9 @@
 {
   "name": "csv-custom-pro",
   "displayName": "CSV_CUSTOM_PRO",
-  "publisher": "CSV_CUSTOM_PRO",
+  "publisher": "csv-custom-pro",
   "description": "无缝显示和编辑CSV文件，支持过滤/排序/搜索",
-  "icon": "images/icon.png",
+  "icon": "images-图片/icon.jpg",
   "repository": {
     "type": "git",
     "url": "https://github.com/jonaraphael/csv.git"
@@ -46,7 +46,7 @@
           "PSV",
           "psv"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./config-配置/language-语言配置.json"
       },
       {
         "id": "tsv",
@@ -60,7 +60,7 @@
           "TAB",
           "tab"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./config-配置/language-语言配置.json"
       }
     ],
     "commands": [
@@ -245,7 +245,7 @@
     "compile": "tsc -p ./",
     "vscode:prepublish": "npm run compile",
     "lint": "eslint 'src-源码/**/*.ts'",
-    "package": "vsce package",
+    "package": "vsce package -o dist-产物/",
     "test": "npm run compile && node --test out/test"
   },
   "dependencies": {

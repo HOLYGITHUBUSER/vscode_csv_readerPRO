@@ -4,8 +4,8 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Webview remote chunk transport', () => {
-  const providerSource = fs.readFileSync(path.join(process.cwd(), 'src', 'CsvEditorProvider.ts'), 'utf8');
-  const webviewSource = fs.readFileSync(path.join(process.cwd(), 'media', 'main.js'), 'utf8');
+  const providerSource = fs.readFileSync(path.join(process.cwd(), 'src-源码', 'CsvEditorProvider.ts'), 'utf8');
+  const webviewSource = fs.readFileSync(path.join(process.cwd(), 'media-媒体', 'main.js'), 'utf8');
 
   it('publishes remote chunk metadata on the root table container', () => {
     assert.ok(providerSource.includes('data-nextchunkstart="${nextChunkStart >= 0 ? nextChunkStart : \'\'}"'));

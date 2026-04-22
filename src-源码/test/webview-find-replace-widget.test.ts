@@ -4,8 +4,8 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Webview find/replace widget', () => {
-  const providerSource = fs.readFileSync(path.join(process.cwd(), 'src', 'CsvEditorProvider.ts'), 'utf8');
-  const webviewSource = fs.readFileSync(path.join(process.cwd(), 'media', 'main.js'), 'utf8');
+  const providerSource = fs.readFileSync(path.join(process.cwd(), 'src-源码', 'CsvEditorProvider.ts'), 'utf8');
+  const webviewSource = fs.readFileSync(path.join(process.cwd(), 'media-媒体', 'main.js'), 'utf8');
 
   it('renders two-row find/replace overlay controls', () => {
     assert.ok(providerSource.includes('id="findReplaceWidget"'));

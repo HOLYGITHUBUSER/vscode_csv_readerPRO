@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Webview link interactions', () => {
-  const source = fs.readFileSync(path.join(process.cwd(), 'media', 'main.js'), 'utf8');
+  const source = fs.readFileSync(path.join(process.cwd(), 'media-媒体', 'main.js'), 'utf8');
 
   it('opens links only on Ctrl/Cmd+click', () => {
     assert.ok(source.includes("closest('.csv-link[data-href]')"));

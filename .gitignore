@@ -1,5 +1,4 @@
 out
-dist
+dist-产物
 node_modules
 .vscode-test/
-*.vsix

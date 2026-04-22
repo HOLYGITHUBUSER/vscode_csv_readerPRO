@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Webview reorder and resize interactions', () => {
-  const source = fs.readFileSync(path.join(process.cwd(), 'media', 'main.js'), 'utf8');
+  const source = fs.readFileSync(path.join(process.cwd(), 'media-媒体', 'main.js'), 'utf8');
 
   it('starts reorder only from preselected header or row-index cells', () => {
     assert.ok(source.includes('startReorderDrag'));

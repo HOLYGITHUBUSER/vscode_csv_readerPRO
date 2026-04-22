@@ -20,7 +20,7 @@ Module.prototype.require = function (id: string) {
 import { CsvEditorProvider } from '../CsvEditorProvider';
 
 describe('CSV fixture: super_example.csv', () => {
-  const csvPath = path.join(process.cwd(), 'src', 'test', 'super_example.csv');
+  const csvPath = path.join(process.cwd(), 'src-源码', 'test', 'super_example.csv');
   const text = fs.readFileSync(csvPath, 'utf8');
   const parsed = Papa.parse<string[]>(text, { dynamicTyping: false, delimiter: ',' });
   const rows = parsed.data as string[][];

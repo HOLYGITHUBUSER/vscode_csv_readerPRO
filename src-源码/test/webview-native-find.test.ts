@@ -4,9 +4,9 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Webview custom find integration', () => {
-  const extensionSource = fs.readFileSync(path.join(process.cwd(), 'src', 'extension.ts'), 'utf8');
-  const providerSource = fs.readFileSync(path.join(process.cwd(), 'src', 'CsvEditorProvider.ts'), 'utf8');
-  const webviewScript = fs.readFileSync(path.join(process.cwd(), 'media', 'main.js'), 'utf8');
+  const extensionSource = fs.readFileSync(path.join(process.cwd(), 'src-源码', 'extension.ts'), 'utf8');
+  const providerSource = fs.readFileSync(path.join(process.cwd(), 'src-源码', 'CsvEditorProvider.ts'), 'utf8');
+  const webviewScript = fs.readFileSync(path.join(process.cwd(), 'media-媒体', 'main.js'), 'utf8');
 
   it('does not enable native webview find widget', () => {
     assert.ok(!extensionSource.includes('enableFindWidget: true'));
