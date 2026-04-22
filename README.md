@@ -2,6 +2,12 @@
 
 一款专为 VS Code 打造的高级 CSV 编辑器扩展，提供类似电子表格的交互体验，让您能够高效地查看、编辑和管理 CSV 数据。
 
+## 最新成品
+
+- 最新安装包（稳定文件名）：[`dist-产物/csv-custom-pro-latest.vsix`](dist-产物/csv-custom-pro-latest.vsix)
+- 构建信息（时间 / 版本 / commit / sha256）：[`dist-产物/BUILD-INFO.md`](dist-产物/BUILD-INFO.md)
+- 历史时间戳版本仍保留在 [`dist-产物/`](dist-产物/)。
+
 ---
 
 ## 功能特性
