@@ -33,9 +33,24 @@ let editingCell = null, originalCellValue = "";
 //  - 'detail': started by Enter or double-click
 let editMode = null; // 'quick' | 'detail' | null
 const DRAG_THRESHOLD_PX = 4;
-const RESIZE_HANDLE_PX = 6;
+const RESIZE_HANDLE_PX = 8;
 let resizeState = null;
 let reorderState = null;
+let currentSortCol = null;
+let currentSortAsc = true;
+try {
+  const saved = vscode.getState && vscode.getState();
+  if (saved && typeof saved.sortCol === 'number') {
+    currentSortCol = saved.sortCol;
+    currentSortAsc = !!saved.sortAsc;
+  }
+} catch {}
+const persistSortState = () => {
+  try {
+    const prev = (vscode.getState && vscode.getState()) || {};
+    vscode.setState({ ...prev, sortCol: currentSortCol, sortAsc: currentSortAsc });
+  } catch {}
+};
 
 const table = document.querySelector('#csv-root table');
 const scrollContainer = document.querySelector('.table-container');
@@ -76,6 +91,11 @@ const applySizeStateToRenderedCells = () => {
     table.querySelectorAll(`[data-row="${row}"]`).forEach(cell => {
       cell.style.height = `${px}px`;
       cell.style.minHeight = `${px}px`;
+      const body = cell.querySelector(':scope > .cell-body');
+      if (body) {
+        body.style.maxHeight = 'none';
+        body.style.overflow = 'hidden';
+      }
     });
   }
 };
@@ -400,10 +420,16 @@ const showContextMenu = (x, y, row, col) => {
 
   /* Header-only: SORT functionality */
   if (lastContextIsHeader) {
-    item('Sort: A-Z', () =>
-      vscode.postMessage({ type: 'sortColumn', index: col, ascending: true }));
-    item('Sort: Z-A', () =>
-      vscode.postMessage({ type: 'sortColumn', index: col, ascending: false }));
+    item('Sort: A-Z', () => {
+      currentSortCol = col; currentSortAsc = true;
+      persistSortState(); updateSortHeaderIndicator();
+      vscode.postMessage({ type: 'sortColumn', index: col, ascending: true });
+    });
+    item('Sort: Z-A', () => {
+      currentSortCol = col; currentSortAsc = false;
+      persistSortState(); updateSortHeaderIndicator();
+      vscode.postMessage({ type: 'sortColumn', index: col, ascending: false });
+    });
   }        
 
   /* Row section */
@@ -568,9 +594,11 @@ const getResizeEdgeInfo = (target, e) => {
       }
     }
   }
-  if (isRowIndexCell(target)) {
-    const row = parseInt(target.getAttribute('data-row') || 'NaN', 10);
-    if (!Number.isNaN(row)) {
+  // Row-resize: any cell with a numeric data-row (serial or data) triggers when near its bottom.
+  const rowAttr = target && target.getAttribute ? target.getAttribute('data-row') : null;
+  if (rowAttr !== null) {
+    const row = parseInt(rowAttr, 10);
+    if (!Number.isNaN(row) && row >= 0) {
       const rect = target.getBoundingClientRect();
       const edgeDelta = rect.bottom - e.clientY;
       if (edgeDelta >= 0 && edgeDelta <= RESIZE_HANDLE_PX) {
@@ -603,6 +631,11 @@ const applyRowHeight = (row, heightPx) => {
   table.querySelectorAll(`[data-row="${row}"]`).forEach(cell => {
     cell.style.height = `${height}px`;
     cell.style.minHeight = `${height}px`;
+    const body = cell.querySelector(':scope > .cell-body');
+    if (body) {
+      body.style.maxHeight = 'none';
+      body.style.overflow = 'hidden';
+    }
   });
 };
 const resetRowHeight = row => {
@@ -610,6 +643,11 @@ const resetRowHeight = row => {
   table.querySelectorAll(`[data-row="${row}"]`).forEach(cell => {
     cell.style.height = '';
     cell.style.minHeight = '';
+    const body = cell.querySelector(':scope > .cell-body');
+    if (body) {
+      body.style.maxHeight = '';
+      body.style.overflow = '';
+    }
   });
 };
 const startResizeDrag = (target, e) => {
@@ -724,6 +762,18 @@ const postOpenLink = link => {
   }
 };
 
+table.addEventListener('click', e => {
+  const sortBtn = getSortBtnTarget(e.target);
+  if (!sortBtn || e.button !== 0) return;
+  const th = sortBtn.closest('th[data-col]');
+  if (!th) return;
+  const col = parseInt(th.getAttribute('data-col') || 'NaN', 10);
+  if (Number.isNaN(col)) return;
+  e.preventDefault();
+  e.stopPropagation();
+  toggleSortOnColumn(col);
+});
+
 document.addEventListener('click', (e) => {
   contextMenu.style.display = 'none';
 
@@ -758,7 +808,39 @@ table.addEventListener('contextmenu', e => {
   showContextMenu(e.pageX, e.pageY, row, col);
 });
 
+const getSortBtnTarget = target => {
+  const el = getElementTarget(target);
+  return el ? el.closest('.sort-btn[data-sort-btn]') : null;
+};
+const updateSortHeaderIndicator = () => {
+  table.querySelectorAll('th.sort-asc, th.sort-desc').forEach(th => {
+    th.classList.remove('sort-asc');
+    th.classList.remove('sort-desc');
+  });
+  if (currentSortCol === null) return;
+  const th = table.querySelector(`th[data-col="${currentSortCol}"]`);
+  if (th) th.classList.add(currentSortAsc ? 'sort-asc' : 'sort-desc');
+};
+const toggleSortOnColumn = col => {
+  if (currentSortCol === col) {
+    currentSortAsc = !currentSortAsc;
+  } else {
+    currentSortCol = col;
+    currentSortAsc = true;
+  }
+  persistSortState();
+  updateSortHeaderIndicator();
+  vscode.postMessage({ type: 'sortColumn', index: col, ascending: currentSortAsc });
+};
+
 table.addEventListener('mousedown', e => {
+  // Sort button on header: intercept before selection / reorder / resize.
+  const sortBtn = getSortBtnTarget(e.target);
+  if (sortBtn && e.button === 0) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
   const link = getLinkTarget(e.target);
   // Ctrl/Cmd+click on a link opens externally on click; keep existing selection unchanged.
   if (link && (e.ctrlKey || e.metaKey)) {
@@ -891,6 +973,10 @@ table.addEventListener('mousemove', e => {
 
 table.addEventListener('mousemove', e => {
   if (isSelecting || resizeState || (reorderState && reorderState.active)) {
+    return;
+  }
+  if (getSortBtnTarget(e.target)) {
+    table.style.cursor = 'pointer';
     return;
   }
   const target = getCellTarget(e.target);
@@ -2191,3 +2277,5 @@ document.addEventListener('keydown', e => {
     clearSelection();
   }
 });
+
+try { updateSortHeaderIndicator(); } catch {}
