@@ -54,6 +54,36 @@ const persistSortState = () => {
 
 const table = document.querySelector('#csv-root table');
 const scrollContainer = document.querySelector('.table-container');
+const COMPACT_ORIG_HTML_ATTR = 'data-orig-html';
+const replaceCompactNewlineText = rootNode => {
+  const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+  for (const node of textNodes) {
+    node.nodeValue = (node.nodeValue || '').replace(/\r\n|\r|\n/g, '↵');
+  }
+};
+const applyCompactNewlineMarkers = (rootNode = table) => {
+  if (!rootNode) return;
+  rootNode.querySelectorAll(`td .cell-body:not([${COMPACT_ORIG_HTML_ATTR}])`).forEach(div => {
+    div.setAttribute(COMPACT_ORIG_HTML_ATTR, div.innerHTML);
+    replaceCompactNewlineText(div);
+  });
+};
+const restoreCompactNewlineMarkers = (rootNode = table) => {
+  if (!rootNode) return;
+  rootNode.querySelectorAll(`td .cell-body[${COMPACT_ORIG_HTML_ATTR}]`).forEach(div => {
+    div.innerHTML = div.getAttribute(COMPACT_ORIG_HTML_ATTR) || '';
+    div.removeAttribute(COMPACT_ORIG_HTML_ATTR);
+  });
+};
+const getCellTextForData = cell => {
+  const compactBody = cell?.querySelector?.(`:scope > .cell-body[${COMPACT_ORIG_HTML_ATTR}]`);
+  if (!compactBody) return cell ? cell.textContent : '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = compactBody.getAttribute(COMPACT_ORIG_HTML_ATTR) || '';
+  return tmp.textContent || '';
+};
 const dragIndicator = document.createElement('div');
 dragIndicator.style.position = 'fixed';
 dragIndicator.style.pointerEvents = 'none';
@@ -958,7 +988,7 @@ table.addEventListener('mousedown', e => {
   }
   /* ──────── END NEW BLOCK ──────── */
   
-  selectionMode = (target.tagName === 'TH') ? "column" : (target.getAttribute('data-col') === '-1' ? "row" : "cell");
+  selectionMode = isColumnHeaderCell(target) ? "column" : (target.getAttribute('data-col') === '-1' ? "row" : "cell");
   startCell = target; endCell = target; rangeEndCell = target; isSelecting = true; e.preventDefault();
   target.focus();
 });
@@ -2075,6 +2105,8 @@ const insertNewlineAtCaret = cell => {
 const editCell = (cell, event, mode = 'detail') => {
   if(editingCell === cell) return;
   if(editingCell) editingCell.blur();
+  const wasCompact = table.classList.contains('row-compact');
+  if (wasCompact) restoreCompactNewlineMarkers(cell);
   cell.classList.remove('selected');
   originalCellValue = cell.textContent;
   editingCell = cell;
@@ -2092,12 +2124,18 @@ const editCell = (cell, event, mode = 'detail') => {
     editingCell = null;
     editMode = null;
     cell.removeEventListener('blur', onBlurHandler);
+    if (wasCompact) applyCompactNewlineMarkers(cell);
   };
   cell.addEventListener('blur', onBlurHandler);
   event ? setCursorAtPoint(cell, event.clientX, event.clientY) : setCursorToEnd(cell);
 };
 
 table.addEventListener('dblclick', e => {
+  if (getSortBtnTarget(e.target)) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
   const edgeTarget = getCellTarget(e.target);
   const edge = getResizeEdgeInfo(edgeTarget, e);
   if (edge) {
@@ -2142,7 +2180,7 @@ const copySelectionToClipboard = () => {
     for(let c = minCol; c <= maxCol; c++){
       const selector = (hasHeader && r === 0 ? 'th' : 'td') + '[data-row="'+r+'"][data-col="'+c+'"]';
       const cell = table.querySelector(selector);
-      rowVals.push(cell ? cell.innerText : '');
+      rowVals.push(cell ? getCellTextForData(cell) : '');
     }
     csv += rowVals.join(CSV_SEPARATOR) + '\n';
   }
@@ -2198,6 +2236,9 @@ window.addEventListener('message', event => {
       } else {
         cell.textContent = value;
       }
+      if (table.classList.contains('row-compact')) {
+        applyCompactNewlineMarkers(cell);
+      }
     }
     isUpdating = false;
     if (findReplaceState.open && findInput.value) {
@@ -2248,6 +2289,9 @@ window.addEventListener('message', event => {
         return '<tr>' + cells.join('') + '</tr>';
       }).join('');
       tbody.innerHTML = html;
+      if (table.classList.contains('row-compact')) {
+        applyCompactNewlineMarkers(tbody);
+      }
     }
     // Sync sort indicator with the authoritative state coming back from host.
     if (typeof message.sortCol === 'number' && message.sortDir) {
@@ -2354,13 +2398,19 @@ try { updateSortHeaderIndicator(); } catch {}
   const applyRowHeightClass = mode => {
     const tbl = document.querySelector('#csv-root table');
     if (!tbl) return;
+    const prev = ROW_HEIGHT_CYCLE.find(m => tbl.classList.contains(`row-${m}`));
     for (const m of ROW_HEIGHT_CYCLE) tbl.classList.remove(`row-${m}`);
     tbl.classList.add(`row-${mode}`);
+    if (mode === 'compact') {
+      applyCompactNewlineMarkers(tbl);
+    } else if (mode !== 'compact' && prev === 'compact') {
+      restoreCompactNewlineMarkers(tbl);
+    }
   };
 
   if (rhBtn) {
     rhBtn.addEventListener('click', () => {
-      const cur  = rhBtn.getAttribute('data-mode') || 'firstline';
+      const cur  = rhBtn.getAttribute('data-mode') || 'compact';
       const idx  = ROW_HEIGHT_CYCLE.indexOf(cur);
       const next = ROW_HEIGHT_CYCLE[(idx + 1) % ROW_HEIGHT_CYCLE.length];
       rhBtn.setAttribute('data-mode', next);
@@ -2369,6 +2419,18 @@ try { updateSortHeaderIndicator(); } catch {}
       vscode.postMessage({ type: 'setRowHeightMode', mode: next });
     });
   }
+
+  // 初始加载时如果已是紧凑模式，也处理换行符
+  const initMode = rhBtn ? (rhBtn.getAttribute('data-mode') || 'compact') : 'compact';
+  if (initMode === 'compact') applyRowHeightClass('compact');
+
+  // chunk动态加载时，如果当前是紧凑模式，也处理新行的换行符
+  window.addEventListener('csvChunkLoaded', () => {
+    const tbl = document.querySelector('#csv-root table');
+    if (tbl && tbl.classList.contains('row-compact')) {
+      applyCompactNewlineMarkers(tbl);
+    }
+  });
 
   // Throttle search input to avoid re-filtering on every keystroke for large CSVs.
   const FILTER_DEBOUNCE_MS = 200;

@@ -191,7 +191,7 @@ export function registerCsvCommands(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand('csv.toggleRowHeightMode', async () => {
       const config = vscode.workspace.getConfiguration('csv');
-      const current = config.get<string>('rowHeightMode', 'firstline');
+      const current = config.get<string>('rowHeightMode', 'compact');
       const modes: Array<'compact' | 'firstline' | 'wrap'> = ['compact', 'firstline', 'wrap'];
       const currentIndex = modes.indexOf(current as any);
       const nextIndex = (currentIndex + 1) % modes.length;

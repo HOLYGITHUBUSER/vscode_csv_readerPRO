@@ -1469,7 +1469,7 @@ class CsvEditorController {
     const showTrailingEmptyRow = config.get<boolean>('showTrailingEmptyRow', true);
     const mouseWheelZoomEnabled = config.get<boolean>('mouseWheelZoom', true);
     const mouseWheelZoomInvert = config.get<boolean>('mouseWheelZoomInvert', false);
-    const rowHeightModeRaw = config.get<string>('rowHeightMode', 'firstline');
+    const rowHeightModeRaw = config.get<string>('rowHeightMode', 'compact');
     const rowHeightMode: 'compact' | 'firstline' | 'wrap' =
       rowHeightModeRaw === 'compact' ? 'compact'
       : rowHeightModeRaw === 'wrap' ? 'wrap'
@@ -1765,8 +1765,8 @@ class CsvEditorController {
       th { background-color: ${isDark ? '#1e1e1e' : '#ffffff'}; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
       td { overflow: hidden; }
       td .cell-body { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
-      table.row-compact td .cell-body { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: ${Math.max(18, Math.round(fontSize * 1.4))}px; }
-      table.row-firstline td .cell-body { max-height: ${Math.max(18, Math.round(fontSize * 1.4))}px; overflow: hidden; }
+      table.row-compact td .cell-body { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-height: ${Math.max(18, Math.round(fontSize * 1.4))}px; }
+      table.row-firstline td .cell-body { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; max-height: ${Math.max(18, Math.round(fontSize * 1.4))}px; overflow: hidden; }
       td.editing .cell-body { max-height: none !important; overflow: visible !important; white-space: pre-wrap !important; }
       td.selected, th.selected { background-color: ${isDark ? '#333333' : '#cce0ff'} !important; }
       td.editing, th.editing { overflow: visible !important; white-space: pre-wrap !important; overflow-wrap: anywhere !important; max-width: none !important; }
@@ -2013,7 +2013,7 @@ class CsvEditorController {
 
     <div id="csvFloatPanel" style="position:fixed;right:16px;bottom:16px;z-index:1150;display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid ${isDark?'#555':'#ccc'};border-radius:6px;background:${isDark?'rgba(30,30,30,0.92)':'rgba(255,255,255,0.96)'};backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 12px rgba(0,0,0,0.25);opacity:0.88;transition:opacity 0.15s ease;font-size:inherit;">
       <span style="font-weight:600;color:${isDark?'#ccc':'#333'};">过滤:</span>
-      <input id="csvGlobalSearch" type="text" placeholder="搜索所有列..." style="height:24px;width:180px;border:1px solid ${isDark?'#555':'#ccc'};border-radius:3px;background:${isDark?'#2d2d2d':'#f5f5f5'};color:${isDark?'#d4d4d4':'#333'};padding:0 6px;font-size:inherit;outline:none;">
+      <input id="csvGlobalSearch" type="text" placeholder="搜索所有列..." style="height:24px;width:120px;border:1px solid ${isDark?'#555':'#ccc'};border-radius:3px;background:${isDark?'#2d2d2d':'#f5f5f5'};color:${isDark?'#d4d4d4':'#333'};padding:0 6px;font-size:inherit;outline:none;">
       <span style="color:${isDark?'#888':'#999'};font-size:0.85em;" id="csvFilterStatus"></span>
       <button id="csvClearFilter" type="button" style="height:24px;border:1px solid ${isDark?'#555':'#ccc'};border-radius:3px;background:${isDark?'#2d2d2d':'#f5f5f5'};color:${isDark?'#d4d4d4':'#333'};cursor:pointer;font-size:inherit;padding:0 8px;display:none;">清除</button>
       <span style="flex:0 0 auto;width:1px;height:18px;background:${isDark?'#555':'#ccc'};margin:0 2px;"></span>

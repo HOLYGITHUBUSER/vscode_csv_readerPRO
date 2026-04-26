@@ -98,7 +98,7 @@
 | `csv.showTrailingEmptyRow` | boolean | true      | 显示末尾空行                         |
 | `csv.separatorMode`        | string  | extension | 分隔符选择模式                        |
 | `csv.defaultSeparator`     | string  | `,`       | 默认分隔符                          |
-| `csv.rowHeightMode`        | string  | firstline | 行高模式：compact、firstline、wrap    |
+| `csv.rowHeightMode`        | string  | compact | 行高模式：compact、firstline、wrap    |
 | `csv.maxFileSizeMB`        | number  | 10        | 文件大小限制（MB），0 表示不限制             |
 
 ## 每文件设置

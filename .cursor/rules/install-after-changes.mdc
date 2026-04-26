@@ -1,0 +1,26 @@
+---
+description: Package and install the extension into Cursor and Windsurf after changes
+alwaysApply: true
+---
+
+# Install After Changes
+
+After substantive code changes to this extension, verify with the relevant tests, then package and install the latest VSIX into both Cursor and Windsurf before reporting done.
+
+For visual changes (table layout, row height, wrapping, selection, buttons), run the relevant Playwright spec and review screenshots before packaging. For row-height or multiline-cell changes, use:
+
+```bash
+npm run test:e2e -- e2e-端到端/row-height-visual.spec.ts
+```
+
+Review the generated screenshots under `e2e-端到端/visual-review/` before reporting the visual change as done.
+
+Use:
+
+```bash
+npm run package
+/Applications/Cursor.app/Contents/Resources/app/bin/cursor --install-extension dist-产物/csv-custom-pro-latest.vsix --force
+/Applications/Windsurf.app/Contents/Resources/app/bin/windsurf --install-extension dist-产物/csv-custom-pro-latest.vsix --force
+```
+
+If either CLI is missing or the install fails, report that explicitly. Remind the user to reload both editor windows after install.

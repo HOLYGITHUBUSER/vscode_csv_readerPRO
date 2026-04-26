@@ -4,4 +4,5 @@ node_modules
 backup/
 .DS_Store
 e2e-端到端/test-results/
+e2e-端到端/visual-review/
 playwright-report/

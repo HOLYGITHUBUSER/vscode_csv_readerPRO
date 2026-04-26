@@ -71,7 +71,7 @@ export interface Harness {
 function buildHtml(cfg: HarnessConfig): string {
   const cols = cfg.columns;
   const addSerial = !!cfg.addSerialIndex;
-  const rowMode = cfg.rowHeightMode ?? 'firstline';
+  const rowMode = cfg.rowHeightMode ?? 'compact';
   const fontSize = cfg.fontSize ?? 14;
 
   const headCells: string[] = [];
@@ -114,8 +114,14 @@ function buildHtml(cfg: HarnessConfig): string {
   th, td { padding: 2px 8px; border: 1px solid #ccc; vertical-align: top; }
   td { overflow: hidden; }
   td .cell-body { display: block; white-space: pre-wrap; }
-  table.row-compact td .cell-body,
-  table.row-firstline td .cell-body { max-height: ${cellBodyMaxHeight}; overflow: hidden; }
+  table.row-compact td .cell-body { max-height: ${cellBodyMaxHeight}; overflow: hidden; }
+  table.row-firstline td .cell-body {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    max-height: ${cellBodyMaxHeight};
+    overflow: hidden;
+  }
 </style>
 </head>
 <body>

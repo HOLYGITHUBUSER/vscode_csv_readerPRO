@@ -215,8 +215,8 @@
             "firstline",
             "wrap"
           ],
-          "default": "firstline",
-          "description": "行高模式：'compact' 紧凑（\\n当空格、横向截断）；'firstline' 单行折行（默认，保留原文、只露第一行）；'wrap' 自然折行（全展开）。可随时拖动行边界手动调整。"
+          "default": "compact",
+          "description": "行高模式：'compact' 紧凑（默认，\\n显示为↵、横向截断）；'firstline' 单行折行（保留原文、只露第一行）；'wrap' 自然折行（全展开）。可随时拖动行边界手动调整。"
         }
       }
     },

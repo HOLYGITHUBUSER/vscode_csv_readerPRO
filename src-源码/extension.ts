@@ -94,6 +94,7 @@ export function activate(context: vscode.ExtensionContext) {
       'csv.diffUseThemeForeground',
       'csv.clickableLinks',
       'csv.showTrailingEmptyRow',
+      'csv.rowHeightMode',
       'csv.separatorMode',
       'csv.defaultSeparator',
       'csv.separatorByExtension'
